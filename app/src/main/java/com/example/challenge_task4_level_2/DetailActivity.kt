@@ -6,40 +6,38 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.Button
 
-class MainActivity : AppCompatActivity() {
-
+class DetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val btnCreateNewNote = findViewById<Button>(R.id.creNewNote)
-        btnCreateNewNote.setOnClickListener{
-            val intent = Intent(this, DetailActivity::class.java)
-            startActivity(intent)
-        }
-
+        setContentView(R.layout.activity_detail)
     }
 
 
-//    Display Note List Icon Menu
+    //    Display sub-items menu as  MainActivity and NoteList Activity
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater: MenuInflater = menuInflater
-        inflater.inflate(R.menu.menuiconmainactivity, menu)
+        inflater.inflate(R.menu.submenuitemsdetailactivity, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 //        Log.i("Thang", "onOptionsItemSelected")
         return when (item.itemId) {
-            R.id.noteListIcon -> {
+            R.id.mainActivity -> {
 //                TODO show NoteList by using RecyclerView
-                val intent = Intent(this, NoteList::class.java)
-                startActivity(intent)
+                val intentNoteList = Intent(this, MainActivity::class.java)
+                startActivity(intentNoteList)
+                true
+            }
+            R.id.NoteListActivity -> {
+//                TODO show NoteList by using RecyclerView
+                val intentMainActivity = Intent(this, NoteList::class.java)
+                startActivity(intentMainActivity)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
 }
