@@ -74,8 +74,8 @@
             android:id="@+id/dateIcon"
             android:layout_gravity="center"
             android:layout_marginStart="15dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             app:srcCompat="@drawable/baseline_date_range_24"
             />
     </LinearLayout>

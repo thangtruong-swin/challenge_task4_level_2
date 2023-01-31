@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">challenge_task4_level_2</string>
+    <string name="keyid">KeyID:</string>
+    <string name="editicon">editIcon</string>
+    <string name="noteid">NoteID:</string>
 </resources>

@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        Log.i("Thang", "onOptionsItemSelected")
         return when (item.itemId) {
             R.id.noteListIcon -> {
 //                TODO show NoteList by using RecyclerView

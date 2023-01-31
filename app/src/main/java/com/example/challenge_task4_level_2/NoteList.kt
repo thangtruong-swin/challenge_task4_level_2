@@ -1,16 +1,14 @@
 package com.example.challenge_task4_level_2
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
+import android.view.*
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,10 +19,7 @@ class NoteList: AppCompatActivity() {
     private lateinit var noteListRecyclerView: RecyclerView
     private lateinit var dbRef: DatabaseReference
     private lateinit var noteList: ArrayList<NoteModel>
-    lateinit var detailActivity: DetailActivity
-    init{
-        detailActivity  = DetailActivity()
-    }
+    private var state: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,28 +36,30 @@ class NoteList: AppCompatActivity() {
             }
         }
         noteListRecyclerView = findViewById(R.id.noteListRecyclerView)
-        noteListRecyclerView.setHasFixedSize(true)
-        noteListRecyclerView.layoutManager = LinearLayoutManager(this)
+//        noteListRecyclerView.setHasFixedSize(true)
 //        add divider
         noteListRecyclerView.addItemDecoration(DividerItemDecoration(this,RecyclerView.VERTICAL))
-        noteList = arrayListOf<NoteModel>()
+        noteListRecyclerView.layoutManager = LinearLayoutManager(this)
+
+
+        noteList = arrayListOf()
         //        call fun to process
         loadNoteFromFirebase(objOnClickEditNote, objOnClickDeleteNote)
     }
 
-    private fun showToastEdit(item: NoteModel){
-        Toast.makeText(this,"EDIT: ${item.noteTitle} ",Toast.LENGTH_SHORT).show()
-    }
     private fun openUpdateNoteDialog(
        item: NoteModel
     ) {
          lateinit var vNodeID: EditText
          lateinit var vTitle: EditText
          lateinit var vDate: EditText
-         lateinit var vDateIcon: ImageView
          lateinit var vDescription: EditText
-         lateinit var btnClear: Button
-         lateinit var btnSubmit: Button
+
+        val sharedPref = this.getSharedPreferences("updatedState", Context.MODE_PRIVATE)?: return
+        with (sharedPref.edit()){
+            putString("KeyID", item.keyID)
+            apply()
+        }
 
         val mDialog = AlertDialog.Builder(this)
         val inflater = layoutInflater
@@ -71,40 +68,27 @@ class NoteList: AppCompatActivity() {
         mDialog.setTitle("Updating NoteID - ${item.noteID} ")
         val alertDialog = mDialog.create()
         alertDialog.show()
-//        val view =findViewById(R.id.openUpdateDialogView).getRootView()
 
         vNodeID = mDialogView.findViewById(R.id.noteID)
+        vNodeID.setText(item.noteID.toString())
+
         vTitle = mDialogView.findViewById(R.id.noteTitle)
+        vTitle.setText(item.noteTitle.toString())
+
         vDate = mDialogView.findViewById(R.id.noteDate)
-        vDateIcon = mDialogView.findViewById(R.id.dateIcon)
+        vDate.setText(item.noteDate.toString())
+
         vDescription = mDialogView.findViewById(R.id.noteDescription)
+        vDescription.setText(item.noteDescription.toString())
 
-        mDialogView.setOnClickListener{
-            detailActivity.Validation(mDialogView)
-        }
-        vNodeID.addTextChangedListener {
-            detailActivity.Validation(mDialogView)
-        }
-//        mDialogView.addOnLayoutChangeListener()
-//        vNodeID.setText(item.noteID.toString())
-        btnClear = mDialogView.findViewById(R.id.btnClear)
-        btnClear.setOnClickListener{
-            detailActivity.clearButton(mDialogView)
-        }
-
-        btnSubmit = mDialogView.findViewById(R.id.btnSubmit)
-        btnSubmit.setOnClickListener{
-            detailActivity.submitButton(mDialogView)
-        }
-//        val intent = Intent(this, DetailActivity::class.java)
-//        startActivity(intent)
-//        vNodeID = findViewById(R.id.noteID)
-//        vNodeID.setText(item.noteID.toString())
-
-//        detailActivity.vNodeID.setText(item.noteID.toString())
-//        Log.i("YOUAREHER", "${item.noteID.toString()}")
-
-//        detailActivity.Validation()
+        val validate = Validation(mDialogView, alertDialog, state)
+        validate.validateNodeID()
+        validate.validateTitle()
+        validate.openDatePickerIcon()
+        validate.validateDate()
+        validate.validateDescription()
+        validate.clearButton()
+        validate.submitButton()
     }
     private fun deleteNoteFromFireBase(
         keyID: String
@@ -112,7 +96,7 @@ class NoteList: AppCompatActivity() {
         val database = FirebaseDatabase.getInstance().getReference("Notes").child(keyID)
         val mTask = database.removeValue()
         mTask.addOnSuccessListener {
-            Toast.makeText(this, " Note KeyID: ${keyID} - has been deleted successfully.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, " Note KeyID: $keyID - has been deleted successfully.", Toast.LENGTH_LONG).show()
         }.addOnFailureListener{ error ->
             Toast.makeText(this, "Deleting Err ${error.message}", Toast.LENGTH_LONG).show()
         }
@@ -140,6 +124,25 @@ class NoteList: AppCompatActivity() {
                 Log.i("loadNoteFromFirebase-onCancelled", databaseError.toException().toString())
             }
         })
+    }
+
+    //    Display arrow Icon to go back MainActivity
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.menuiconnotelist, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.noteListIcon -> {
+//                TODO show NoteList by using RecyclerView
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
 
