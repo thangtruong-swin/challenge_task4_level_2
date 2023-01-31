@@ -5,24 +5,20 @@ import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
+import android.view.*
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class DetailActivity : AppCompatActivity() {
+
+open class DetailActivity : AppCompatActivity() {
 
     private lateinit var vNodeID: EditText
     private lateinit var vTitle: EditText
@@ -32,72 +28,26 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var btnClear: Button
     private lateinit var btnSubmit: Button
     private lateinit var dbRef: DatabaseReference
-    private val imageViewModel: ImageViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
+        val rootView =
+            (findViewById<View>(android.R.id.content) as ViewGroup).getChildAt(0) as ViewGroup
 
-        vNodeID = findViewById(R.id.noteID)
-        vNodeID.addTextChangedListener{
-            for(i in 0  until vNodeID.length()){
-                if(vNodeID.text.get(i).isLetter() == true ||
-                    vNodeID.text.get(i).isDigit() == false) {
-                    vNodeID.error = "NoteID should be digits"
-                }
-            }
-            if(vNodeID.text.trim().isEmpty()){
-                vNodeID.error = "NoteID should not empty"
-            }
-            if(vNodeID.text.trim().length > 10){
-                vNodeID.error = "NoteID should not greater than 10 digits"
-            }
-        }
-        vTitle = findViewById(R.id.noteTitle)
-        val special = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE)
-        vTitle.addTextChangedListener{
-            var matcher: Matcher = special.matcher(vTitle.text.trim())
-            var specialSymbols = matcher.find()
-            Log.i("specialSymbols",specialSymbols.toString())
-            if(specialSymbols){
-                vTitle.error = "Title should not have special characters"
-            }
-            if(vTitle.text.trim().isEmpty()){
-                vTitle.error = "Title should not empty"
-            }
-            if(vTitle.text.trim().length > 100){
-                vTitle.error = "Title should not greater than 100 characters"
-            }
-        }
+//        call fun to submit
+        val currentView = getWindow().getDecorView().getRootView()
+        //cal fun to validate widgets
+        Validation(rootView)
 
-        vDateIcon = findViewById(R.id.dateIcon)
-        vDateIcon.setOnClickListener{
-            displayDatePicker()
-        }
-        vDate = findViewById(R.id.noteDate)
-        vDate.addTextChangedListener {
+        //call fun to clear error and input
+        clearButton(rootView)
 
-            if(!dateValidation() || vDate.text.trim().length > 10){
-                vDate.error = "Date input invalid"
-            }
-            else{
-                vDate.setError(null)
-            }
-        }
+        submitButton(rootView)
 
-        vDescription = findViewById(R.id.noteDescription)
-        vDescription.addTextChangedListener {
-            if(vDescription.text.trim().isEmpty()){
-                vDescription.error = "Description should not empty"
-            }
-        }
-
-        btnClear = findViewById(R.id.btnClear)
-        btnClear.setOnClickListener{
-            resetEmptyfields()
-        }
-
-        btnSubmit = findViewById(R.id.btnSubmit)
+    }
+    fun submitButton(view: View) {
+        btnSubmit = view.findViewById(R.id.btnSubmit)
         btnSubmit.setOnClickListener{
             if( (vNodeID.error == null) && (vNodeID.text.trim().toString().length > 0)
                 && (vTitle.error == null) && (vTitle.text.trim().toString().length > 0)
@@ -115,7 +65,69 @@ class DetailActivity : AppCompatActivity() {
             }
         }
     }
+    fun clearButton(view: View) {
+        btnClear = view.findViewById(R.id.btnClear)
+        btnClear.setOnClickListener{
+            resetEmptyfields()
+        }
+    }
+    fun Validation(view: View) {
+//        val view =  (findViewById<View>(android.R.id.content) as ViewGroup).getChildAt(0) as ViewGroup
 
+        vNodeID = view.findViewById(R.id.noteID)
+        vNodeID.addTextChangedListener{
+            for(i in 0  until vNodeID.length()){
+                if(vNodeID.text.get(i).isLetter() == true ||
+                    vNodeID.text.get(i).isDigit() == false) {
+                    vNodeID.error = "NoteID should be digits"
+                }
+            }
+            if(vNodeID.text.trim().isEmpty()){
+                vNodeID.error = "NoteID should not empty"
+            }
+            if(vNodeID.text.trim().length > 10){
+                vNodeID.error = "NoteID should not greater than 10 digits"
+            }
+        }
+        vTitle = view.findViewById(R.id.noteTitle)
+        val special = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE)
+        vTitle.addTextChangedListener{
+            var matcher: Matcher = special.matcher(vTitle.text.trim())
+            var specialSymbols = matcher.find()
+            Log.i("specialSymbols",specialSymbols.toString())
+            if(specialSymbols){
+                vTitle.error = "Title should not have special characters"
+            }
+            if(vTitle.text.trim().isEmpty()){
+                vTitle.error = "Title should not empty"
+            }
+            if(vTitle.text.trim().length > 100){
+                vTitle.error = "Title should not greater than 100 characters"
+            }
+        }
+
+        vDateIcon = view.findViewById(R.id.dateIcon)
+        vDateIcon.setOnClickListener{
+            displayDatePicker()
+        }
+        vDate = view.findViewById(R.id.noteDate)
+        vDate.addTextChangedListener {
+
+            if(!dateValidation() || vDate.text.trim().length > 10){
+                vDate.error = "Date input invalid"
+            }
+            else{
+                vDate.setError(null)
+            }
+        }
+
+        vDescription = view.findViewById(R.id.noteDescription)
+        vDescription.addTextChangedListener {
+            if(vDescription.text.trim().isEmpty()){
+                vDescription.error = "Description should not empty"
+            }
+        }
+    }
     private fun saveNote() {
 
 //    Save NoteData into Firebase
@@ -125,13 +137,13 @@ class DetailActivity : AppCompatActivity() {
             vTitle.text.toString(),vDate.text.toString(),vDescription.text.toString())
         dbRef.child(noteKey).setValue(note)
             .addOnCompleteListener {
-                Toast.makeText(this, "Data inserted successfully", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Note inserted successfully", Toast.LENGTH_LONG).show()
                 resetEmptyfields()
             }.addOnFailureListener { err ->
                 Toast.makeText(this, "Error ${err.message}", Toast.LENGTH_LONG).show()
             }
     }
-    private fun resetEmptyfields() {
+     fun resetEmptyfields() {
         vNodeID.text.clear()
         vNodeID.setError(null)
 
@@ -146,7 +158,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     //    fun to process DatePicker
-    private val displayDatePicker = {
+     val displayDatePicker = {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
@@ -222,14 +234,14 @@ class DetailActivity : AppCompatActivity() {
                 (year % 100 != 0)) ||
                 (year % 400 == 0));
     }
-    private fun validationProcess() {
-        val NoteID = vNodeID.text.trim().toString()
-        val noteTitle = vTitle.text.trim().toString()
-        val noteDate = vDate.text.trim().toString()
-        val noteDescription = vDescription.text.trim().toString()
-
-
-    }
+//    private fun validationProcess() {
+//        val NoteID = vNodeID.text.trim().toString()
+//        val noteTitle = vTitle.text.trim().toString()
+//        val noteDate = vDate.text.trim().toString()
+//        val noteDescription = vDescription.text.trim().toString()
+//
+//
+//    }
 
     //    Display sub-items menu as  MainActivity and NoteList Activity
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -255,14 +267,6 @@ class DetailActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-}
-class ImageViewModel: ViewModel() {
-    //    this keeps track of the current image
-    var image = MutableLiveData<Int>()
-    init {
-//        image.value = R.drawable.baseline_assignment_turned_in_24
     }
 
 }

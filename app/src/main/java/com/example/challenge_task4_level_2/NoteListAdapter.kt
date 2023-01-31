@@ -5,12 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 
 import androidx.recyclerview.widget.RecyclerView
 
-class NoteListAdapter(var noteList: ArrayList<NoteModel>)
-    : RecyclerView.Adapter<NoteListAdapter.ViewHolder>() {
+class NoteListAdapter(private var noteList: ArrayList<NoteModel>,
+                      private val OnClickEditNote: OnClickEditNoteInterface,
+                      private val OnClickDeleteNote: OnClickDeleteNoteInterface
+                      ): RecyclerView.Adapter<NoteListAdapter.ViewHolder>() {
+    interface OnClickEditNoteInterface {
+        fun onClickAbstractMethodEditNote(item: NoteModel)
+    }
+    interface OnClickDeleteNoteInterface {
+        fun onClickAbstractMethodDeleteNote(item: NoteModel)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteListAdapter.ViewHolder {
 //        Log.i("Thang", "onCreateViewHolder")
@@ -34,16 +43,25 @@ class NoteListAdapter(var noteList: ArrayList<NoteModel>)
         private val vTitle: TextView = v.findViewById(R.id.vTitle)
         private val vDate: TextView = v.findViewById(R.id.vDate)
         private val vDescription: TextView = v.findViewById(R.id.vDescription)
-
+        private val vEditIcon: ImageView = v.findViewById(R.id.editIcon)
+        private val vDeleteIcon: ImageView = v.findViewById(R.id.deleteIcon)
 
         @SuppressLint("UseCompatLoadingForDrawables")
         fun bind(item: NoteModel) {
-//            Log.i("Thang", "bind")
             vKeyID.text = item.keyID
             vNoteID.text = item.noteID.toString()
             vTitle.text = item.noteTitle
             vDate.text = item.noteDate
             vDescription.text = item.noteDescription
+
+            vEditIcon.setOnClickListener {
+                OnClickEditNote.onClickAbstractMethodEditNote(item)
+            }
+            vDeleteIcon.setOnClickListener {
+                OnClickDeleteNote.onClickAbstractMethodDeleteNote(item)
+            }
         }
+
+
     }
 }
