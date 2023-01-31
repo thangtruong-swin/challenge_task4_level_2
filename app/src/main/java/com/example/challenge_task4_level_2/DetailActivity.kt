@@ -11,8 +11,14 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -25,6 +31,8 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var vDescription: EditText
     private lateinit var btnClear: Button
     private lateinit var btnSubmit: Button
+    private lateinit var dbRef: DatabaseReference
+    private val imageViewModel: ImageViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +69,7 @@ class DetailActivity : AppCompatActivity() {
                 vTitle.error = "Title should not greater than 100 characters"
             }
         }
+
         vDateIcon = findViewById(R.id.dateIcon)
         vDateIcon.setOnClickListener{
             displayDatePicker()
@@ -75,6 +84,7 @@ class DetailActivity : AppCompatActivity() {
                 vDate.setError(null)
             }
         }
+
         vDescription = findViewById(R.id.noteDescription)
         vDescription.addTextChangedListener {
             if(vDescription.text.trim().isEmpty()){
@@ -84,13 +94,55 @@ class DetailActivity : AppCompatActivity() {
 
         btnClear = findViewById(R.id.btnClear)
         btnClear.setOnClickListener{
-            vNodeID.setText("")
-            vTitle.setText("")
-            vDate.setText("")
-            vDescription.setText("")
+            resetEmptyfields()
         }
 
         btnSubmit = findViewById(R.id.btnSubmit)
+        btnSubmit.setOnClickListener{
+            if( (vNodeID.error == null) && (vNodeID.text.trim().toString().length > 0)
+                && (vTitle.error == null) && (vTitle.text.trim().toString().length > 0)
+                && (vDate.error == null) && (vDate.text.trim().toString().length > 0)
+                && (vDescription.error == null) && (vDescription.text.trim().toString().length > 0)
+            ){
+                saveNote()
+            }
+            else{
+//                Toast.makeText(this, "Please enter values", Toast.LENGTH_LONG).show()
+                vNodeID.error = "NoteID should not empty"
+                vTitle.error = "Title should not empty"
+                vDate.error = "Date should not empty"
+                vDescription.error = "Description should not empty"
+            }
+        }
+    }
+
+    private fun saveNote() {
+
+//    Save NoteData into Firebase
+        dbRef = FirebaseDatabase.getInstance().getReference("Notes")
+        val noteKey = dbRef.push().key!!
+        val note = NoteModel(noteKey,  vNodeID.text.toString().toInt(),
+            vTitle.text.toString(),vDate.text.toString(),vDescription.text.toString())
+        dbRef.child(noteKey).setValue(note)
+            .addOnCompleteListener {
+                Toast.makeText(this, "Data inserted successfully", Toast.LENGTH_LONG).show()
+                resetEmptyfields()
+            }.addOnFailureListener { err ->
+                Toast.makeText(this, "Error ${err.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+    private fun resetEmptyfields() {
+        vNodeID.text.clear()
+        vNodeID.setError(null)
+
+        vTitle.text.clear()
+        vTitle.setError(null)
+
+        vDate.text.clear()
+        vDate.setError(null)
+
+        vDescription.text.clear()
+        vDescription.setError(null)
     }
 
     //    fun to process DatePicker
@@ -203,6 +255,14 @@ class DetailActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+}
+class ImageViewModel: ViewModel() {
+    //    this keeps track of the current image
+    var image = MutableLiveData<Int>()
+    init {
+//        image.value = R.drawable.baseline_assignment_turned_in_24
     }
 
 }
