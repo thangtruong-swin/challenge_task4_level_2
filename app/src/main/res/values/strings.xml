@@ -3,4 +3,6 @@
     <string name="keyid">KeyID:</string>
     <string name="editicon">editIcon</string>
     <string name="noteid">NoteID:</string>
+    <string name="detail_activity">Detail Activity</string>
+    <string name="date">Date:</string>
 </resources>
